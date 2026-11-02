@@ -1,0 +1,53 @@
+{#
+  Console de requêtes de l'API, pilotée par assets/ts/pages/try-it.ts (un seul exemplaire par page)
+
+  Paramètre :
+  - presets : exemples proposés, chacun { method, url, body } (obligatoire)
+#}
+
+<div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Exemples de requêtes">
+  {% for preset in presets %}
+    <button type="button" class="chip{{ loop.first ? ' is-selected' }}" aria-pressed="{{ loop.first ? 'true' : 'false' }}" data-try-preset data-method="{{ preset.method }}" data-url="{{ preset.url }}" data-body="{{ preset.body }}">{{ preset.method }} {{ preset.url }}</button>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-5">
+    <form class="box h-100 mb-0" id="try-it">
+      <div class="mb-4">
+        <span class="form-label" id="try-method-label">Méthode</span>
+        <div class="segmented-control segmented-control-sm segmented-control-full" role="radiogroup" aria-labelledby="try-method-label" id="try-method">
+          {% for method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] %}
+            <button type="button" class="segmented-control-option" role="radio" aria-checked="{{ loop.first ? 'true' : 'false' }}" data-value="{{ method }}">{{ method }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="try-url">URL</label>
+        <input class="form-control font-monospace" id="try-url" value="{{ presets[0].url }}" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="mb-4" id="try-body-field" hidden>
+        <label class="form-label" for="try-body">Body JSON</label>
+        <textarea class="form-control font-monospace" id="try-body" rows="6" spellcheck="false"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-100"><i class="ri-send-plane-line"></i> Envoyer la requête</button>
+    </form>
+  </div>
+
+  <div class="col-12 col-lg-7" aria-live="polite">
+    <div class="alert alert-soft-danger" id="try-error" role="alert" hidden>
+      <i class="ri-error-warning-line alert-icon"></i>
+      <div class="alert-content" id="try-error-message"></div>
+    </div>
+    <div class="code-block" id="try-response">
+      <div class="code-header">
+        <span class="code-title" id="try-request">Réponse</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="small" id="try-duration"></span>
+          <span class="badge badge-secondary" id="try-status">…</span>
+        </div>
+      </div>
+      <pre class="code-content m-0 try-output"><code id="try-output"></code></pre>
+    </div>
+  </div>
+</div>

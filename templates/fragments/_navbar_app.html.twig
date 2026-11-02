@@ -1,0 +1,29 @@
+{% set route = app.request.attributes.get('_route') %}
+
+<header class="app-header">
+  <nav class="navbar navbar-expand-lg" aria-label="Navigation principale">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-ds-toggle="collapse" data-ds-target="#appNavbarCollapse" aria-expanded="false" aria-controls="appNavbarCollapse" aria-label="Ouvrir le menu">
+        <i class="ri-menu-line"></i>
+      </button>
+
+      <a class="navbar-brand" href="{{ path('app_home') }}">
+        <span class="avatar avatar-sm"><img src="{{ asset(logo_path) }}" alt=""></span> JSONPlaceholder
+      </a>
+
+      <div class="collapse navbar-collapse" id="appNavbarCollapse">
+        <ul class="navbar-nav">
+          <li><a class="nav-link{{ route starts with 'app_docs_' ? ' active' }}" href="{{ path('app_docs_index') }}"{{ route starts with 'app_docs_' ? ' aria-current="page"' }}>Documentation</a></li>
+        </ul>
+      </div>
+
+      <div class="navbar-end">
+        <div class="segmented-control segmented-control-sm" role="radiogroup" aria-label="Thème" data-ds-theme-switch>
+          <button type="button" class="segmented-control-option" role="radio" aria-checked="true" data-value="auto" aria-label="Automatique" title="Automatique (suit le réglage de l'appareil)"><i class="ri-computer-line"></i></button>
+          <button type="button" class="segmented-control-option" role="radio" aria-checked="false" data-value="light" aria-label="Clair" title="Thème clair"><i class="ri-sun-line"></i></button>
+          <button type="button" class="segmented-control-option" role="radio" aria-checked="false" data-value="dark" aria-label="Sombre" title="Thème sombre"><i class="ri-moon-line"></i></button>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

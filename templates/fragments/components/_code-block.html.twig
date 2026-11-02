@@ -1,0 +1,30 @@
+{#
+  Bloc de code avec copie (repris du design system)
+
+  Paramètres :
+  - code     : le code à afficher (obligatoire)
+  - id       : identifiant unique, cible de la copie (obligatoire)
+  - language : langage affiché dans l'en-tête (défaut : text)
+  - title    : titre du bloc (optionnel)
+#}
+{% set language = language|default('text') %}
+
+<div class="code-block" data-language="{{ language }}">
+  <div class="code-header">
+    <div class="d-flex align-items-center gap-3">
+      <span class="code-language">{{ language|upper }}</span>
+      {% if title is defined %}
+        <span class="code-title">{{ title }}</span>
+      {% endif %}
+    </div>
+
+    <div class="code-actions">
+      <button type="button" class="btn btn-sm btn-ghost-secondary btn-copy-code" data-copy-target="{{ id }}" title="Copier le code">
+        <i class="ri-clipboard-line"></i>
+        <span class="d-none d-sm-inline ms-1">Copier</span>
+      </button>
+    </div>
+  </div>
+
+  <pre class="code-content m-0"><code id="{{ id }}" class="language-{{ language }}">{{ code|trim }}</code></pre>
+</div>

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "rootDir": "assets/ts",
+    "outDir": "public/js",
+    "paths": {
+      "@/*": ["./assets/ts/*"]
+    },
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["assets/ts/**/*"]
+}

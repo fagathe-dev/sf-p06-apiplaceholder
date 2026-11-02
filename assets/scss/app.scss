@@ -1,0 +1,25 @@
+// Styles propres au site (compilés vers public/css/app.css), chargés après l'UI kit.
+
+// Bannière collée au header et alignée sur le conteneur de la page
+.home-hero {
+  --jumbotron-px: 0;
+  --jumbotron-py: var(--ds-space-16);
+
+  margin-block-start: calc(var(--ds-space-12) * -1);
+}
+
+// Laisse l'ancre #try visible sous le header collant
+.try-section {
+  scroll-margin-block-start: var(--ds-size-topbar);
+}
+
+// Une longue réponse défile dans son bloc au lieu d'étirer la page
+.try-output {
+  max-block-size: calc(var(--ds-space-24) * 5);
+  overflow: auto;
+
+  code {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+}

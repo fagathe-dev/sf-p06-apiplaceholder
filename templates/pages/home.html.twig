@@ -1,0 +1,87 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% set host = app.request.schemeAndHttpHost %}
+{% set features = [
+  { icon: 'ri-flashlight-line', title: 'Aucune configuration', text: 'Ni compte, ni clé d\'API. CORS est ouvert : appelez-la depuis n\'importe quelle page ou application.' },
+  { icon: 'ri-database-2-line', title: 'De vraies écritures', text: 'Ce que vous créez avec POST est enregistré : vous pouvez le relire et le modifier.' },
+  { icon: 'ri-shield-check-line', title: 'Un jeu de données intact', text: 'Les données initiales ne bougent jamais, et les vôtres sont effacées chaque nuit à 03h00.' },
+] %}
+
+{% block content %}
+<section class="jumbotron jumbotron-fluid home-hero mb-8" aria-labelledby="home-title">
+  <div class="row g-6 align-items-center">
+    <div class="col-12 col-lg-6">
+      <span class="badge badge-secondary mb-4" id="health-status" data-url="{{ path('api_health_check') }}" role="status">Vérification de l'API…</span>
+      <h1 class="jumbotron-title" id="home-title">L'API de test où vos données existent vraiment</h1>
+      <p class="jumbotron-lead">
+        Six ressources REST prêtes à l'emploi pour vos prototypes, vos tests et vos démos.
+        Contrairement aux API factices, ce que vous créez reste en base jusqu'à la nuit suivante.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="#try" class="btn btn-primary btn-lg"><i class="ri-play-line"></i> Essayer</a>
+        <a href="{{ path('app_docs_index') }}" class="btn btn-outline-primary btn-lg">Lire la documentation</a>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+{% set snippet %}
+const url = '{{ host }}/api/posts';
+
+const response = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-type': 'application/json' },
+  body: JSON.stringify({
+    title: 'Mon nouveau post',
+    body: 'Enregistré pour de vrai',
+    userId: 1,
+  }),
+});
+
+const post = await response.json();
+// Consultable avec GET /api/posts/{post.id}
+{% endset %}
+      {% include 'fragments/components/_code-block.html.twig' with { code: snippet, id: 'code-hero', language: 'javascript', title: 'Créer un post' } only %}
+    </div>
+  </div>
+</section>
+
+<section class="mb-8" aria-label="Points forts">
+  <div class="row g-4">
+    {% for feature in features %}
+      <div class="col-12 col-md-4">
+        <div class="box h-100 mb-0">
+          <h2 class="box-title h5"><i class="{{ feature.icon }} text-primary"></i> {{ feature.title }}</h2>
+          <p>{{ feature.text }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mb-8 try-section" id="try" aria-labelledby="try-title">
+  <h2 id="try-title">Essayez sans rien installer</h2>
+  <p>Choisissez un exemple ou écrivez votre requête : la réponse vient directement de l'API.</p>
+  {% include 'fragments/components/_api_console.html.twig' with { presets: presets } only %}
+</section>
+
+<section class="mb-8" aria-labelledby="resources-title">
+  <h2 id="resources-title">Six ressources liées entre elles</h2>
+  <p>Des utilisateurs, leurs posts, leurs albums et leurs tâches : de quoi simuler une vraie application.</p>
+  <div class="row g-4">
+    {% for resource in resources %}
+      <div class="col-12 col-sm-6 col-lg-4">
+        <a href="{{ path('app_docs_resource', {slug: resource.slug}) }}" class="card card-elevated h-100 text-decoration-none">
+          <div class="card-body">
+            <h3 class="card-title"><i class="{{ resource.icon }} text-primary"></i> /api/{{ resource.slug }}</h3>
+            <p class="card-text">{{ resource.description }}</p>
+            <span class="badge badge-secondary">{{ resource.count }} entrées</span>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  <script type="module" src="{{ asset('js/pages/try-it.js') }}"></script>
+{% endblock %}

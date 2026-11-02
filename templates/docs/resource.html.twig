@@ -1,0 +1,118 @@
+{% extends 'docs/layout.html.twig' %}
+
+{% block doc_title %}{{ resource.label }}{% endblock %}
+
+{% set host = app.request.schemeAndHttpHost %}
+{% set slug = resource.slug %}
+{% set json_options = constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES') %}
+{% set payload = resource.payload|json_encode(json_options) %}
+{% set patch = resource.patch|json_encode(json_options) %}
+{% set first_filter = resource.filters|first %}
+{% set read_fetch = ".then((response) => response.json())\n  .then((json) => console.log(json));" %}
+{% set headers = "headers: { 'Content-type': 'application/json; charset=UTF-8' }" %}
+{% set examples = [
+  { id: 'list', title: 'Lister', method: 'GET', uri: '/api/' ~ slug, status: 200,
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "?_limit=10')\n  " ~ read_fetch },
+  { id: 'show', title: 'Récupérer', method: 'GET', uri: '/api/' ~ slug ~ '/{id}', status: '200, 404',
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "/1')\n  " ~ read_fetch },
+  { id: 'create', title: 'Créer', method: 'POST', uri: '/api/' ~ slug, status: '201, 400, 422',
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "', {\n  method: 'POST',\n  " ~ headers ~ ",\n  body: JSON.stringify(" ~ payload ~ "),\n})\n  " ~ read_fetch },
+  { id: 'replace', title: 'Remplacer', method: 'PUT', uri: '/api/' ~ slug ~ '/{id}', status: '200, 400, 404, 422',
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "/1', {\n  method: 'PUT',\n  " ~ headers ~ ",\n  body: JSON.stringify(" ~ payload ~ "),\n})\n  " ~ read_fetch },
+  { id: 'patch', title: 'Modifier', method: 'PATCH', uri: '/api/' ~ slug ~ '/{id}', status: '200, 400, 404, 422',
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "/1', {\n  method: 'PATCH',\n  " ~ headers ~ ",\n  body: JSON.stringify(" ~ patch ~ "),\n})\n  " ~ read_fetch },
+  { id: 'delete', title: 'Supprimer (simulé)', method: 'DELETE', uri: '/api/' ~ slug ~ '/{id}', status: 204,
+    fetch: "fetch('" ~ host ~ "/api/" ~ slug ~ "/1', { method: 'DELETE' })\n  .then((response) => console.log(response.status)); // 204, sans contenu" },
+] %}
+{% set methods = { GET: 'success', POST: 'info', PUT: 'warning', PATCH: 'warning', DELETE: 'danger' } %}
+
+{% block doc_content %}
+<header class="mb-6">
+  <h1><i class="{{ resource.icon }} text-primary"></i> {{ resource.label }}</h1>
+  <p class="lead">{{ resource.description }}</p>
+  <span class="badge badge-secondary">{{ resource.count }} entrées initiales</span>
+</header>
+
+<section class="mb-8 try-section" id="try" aria-labelledby="try-title">
+  <h2 id="try-title">Tester</h2>
+  {% include 'fragments/components/_api_console.html.twig' with { presets: presets } only %}
+</section>
+
+<section class="mb-8" aria-labelledby="fields-title">
+  <h2 id="fields-title">Champs</h2>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Champ</th>
+          <th scope="col">Type</th>
+          <th scope="col">POST et PUT</th>
+          <th scope="col">Règle</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for field in resource.fields %}
+          <tr>
+            <td><code>{{ field.name }}</code></td>
+            <td>{{ field.type }}</td>
+            <td>
+              {% if field.name == 'id' %}
+                <span class="badge badge-soft-info">Généré</span>
+              {% elseif field.required %}
+                <span class="badge badge-soft-danger">Obligatoire</span>
+              {% else %}
+                <span class="badge badge-secondary">Facultatif</span>
+              {% endif %}
+            </td>
+            <td>{{ field.rule }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-4">
+    PATCH ne valide que les champs envoyés. Les données initiales ne sont jamais modifiées : la réponse montre
+    seulement le résultat simulé. DELETE répond toujours 204 sans rien supprimer.
+  </p>
+</section>
+
+<section class="mb-8" aria-labelledby="query-title">
+  <h2 id="query-title">Filtres</h2>
+  <p>
+    {% for filter in resource.filters %}<code>{{ filter }}</code>{{ not loop.last ? ', ' }}{% endfor %},
+    à combiner avec <code>_start</code> et <code>_limit</code>. Exemple :
+    <code>/api/{{ slug }}?{{ first_filter }}={{ first_filter ends with 'Id' ? '1' : 'valeur' }}&amp;_limit=5</code>.
+  </p>
+  {% if resource.nested is not empty %}
+    <h3>Routes imbriquées</h3>
+    <ul>
+      {% for nested in resource.nested %}
+        <li><code>GET /api/{{ slug }}/{id}/{{ nested.uri }}</code> : {{ nested.description }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</section>
+
+<section class="mb-8" aria-labelledby="examples-title">
+  <h2 id="examples-title">Exemples</h2>
+  <div class="accordion">
+    {% for example in examples %}
+      <div class="accordion-item">
+        <button type="button" class="accordion-button" data-ds-toggle="accordion" data-ds-target="#op-{{ example.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="op-{{ example.id }}">
+          <span class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge badge-soft-{{ methods[example.method] }}">{{ example.method }}</span>
+            {{ example.title }} <code>{{ example.uri }}</code>
+          </span>
+          <i class="ri-arrow-down-s-line accordion-icon"></i>
+        </button>
+        <div id="op-{{ example.id }}" class="accordion-collapse collapse{{ loop.first ? ' show' }}">
+          <div class="accordion-body d-flex flex-column gap-4">
+            <p class="mb-0">Codes de retour : {{ example.status }}</p>
+            {% include 'fragments/components/_code-block.html.twig' with { code: example.fetch, id: 'code-' ~ slug ~ '-' ~ example.id, language: 'javascript' } only %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

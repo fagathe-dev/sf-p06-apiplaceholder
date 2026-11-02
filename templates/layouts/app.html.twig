@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="layout-app">
+  {% include 'fragments/_navbar_app.html.twig' %}
+
+  <main class="app-main">
+    <div class="container-fluid container-xxl">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  {% include 'fragments/_footer_app.html.twig' %}
+</div>
+{% endblock %}

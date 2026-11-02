@@ -1,0 +1,179 @@
+{% extends 'docs/layout.html.twig' %}
+
+{% block doc_title %}Vue d'ensemble{% endblock %}
+
+{% set host = app.request.schemeAndHttpHost %}
+{% set methods = { GET: 'success', POST: 'info', PUT: 'warning', PATCH: 'warning', DELETE: 'danger' } %}
+{% set operations = [
+  { method: 'GET', uri: '/api/{resource}', description: 'Liste les entrées, avec filtres et pagination', codes: '200, 422' },
+  { method: 'GET', uri: '/api/{resource}/{id}', description: 'Retourne une entrée', codes: '200, 404' },
+  { method: 'POST', uri: '/api/{resource}', description: 'Crée une entrée, réellement enregistrée', codes: '201, 400, 422' },
+  { method: 'PUT', uri: '/api/{resource}/{id}', description: 'Remplace une entrée', codes: '200, 400, 404, 422' },
+  { method: 'PATCH', uri: '/api/{resource}/{id}', description: 'Modifie les champs envoyés', codes: '200, 400, 404, 422' },
+  { method: 'DELETE', uri: '/api/{resource}/{id}', description: 'Simule une suppression : rien n\'est supprimé', codes: '204' },
+] %}
+{% set statuses = [
+  { code: 200, description: 'Requête GET, PUT ou PATCH réussie' },
+  { code: 201, description: 'Ressource créée avec POST' },
+  { code: 204, description: 'Requête DELETE : aucun contenu, et rien n\'est supprimé' },
+  { code: 400, description: 'JSON malformé, ou clé étrangère inexistante' },
+  { code: 404, description: 'Ressource introuvable : le corps de la réponse est {}' },
+  { code: 413, description: 'Body de la requête supérieur à 64 Ko' },
+  { code: 422, description: 'Erreur de validation, détaillée dans violations' },
+  { code: 429, description: 'Limite d\'appels par IP dépassée, voir l\'en-tête Retry-After' },
+  { code: 503, description: 'La base de données ne répond plus (health check)' },
+] %}
+
+{% block doc_content %}
+<header class="mb-6">
+  <h1>Documentation de l'API</h1>
+  <p class="lead">Une API REST publique, sans authentification, qui expose six ressources au format JSON.</p>
+</header>
+
+<section class="mb-8" aria-labelledby="base-title">
+  <h2 id="base-title">URL de base</h2>
+  {% include 'fragments/components/_code-block.html.twig' with { code: host ~ '/api', id: 'code-base-url', language: 'text' } only %}
+  <p class="mt-4">Toutes les origines sont autorisées (CORS <code>*</code>) et les réponses sont en JSON.</p>
+</section>
+
+<section class="mb-8 try-section" id="try" aria-labelledby="try-title">
+  <h2 id="try-title">Tester</h2>
+  <p>Choisissez un exemple ou écrivez votre requête : la réponse vient directement de l'API.</p>
+  {% include 'fragments/components/_api_console.html.twig' with { presets: presets } only %}
+</section>
+
+<section class="mb-8" aria-labelledby="resources-title">
+  <h2 id="resources-title">Ressources</h2>
+  <div class="row g-4">
+    {% for item in resources %}
+      <div class="col-12 col-md-6 col-xl-4">
+        <a href="{{ path('app_docs_resource', {slug: item.slug}) }}" class="card card-elevated h-100 text-decoration-none">
+          <div class="card-body">
+            <h3 class="card-title"><i class="{{ item.icon }} text-primary"></i> /api/{{ item.slug }}</h3>
+            <p class="card-text">{{ item.description }}</p>
+            <span class="badge badge-secondary">{{ item.count }} entrées</span>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mb-8" aria-labelledby="operations-title">
+  <h2 id="operations-title">Opérations</h2>
+  <p>Chaque ressource accepte les mêmes opérations.</p>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Méthode</th>
+          <th scope="col">URI</th>
+          <th scope="col">Description</th>
+          <th scope="col">Codes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for operation in operations %}
+          <tr>
+            <td><span class="badge badge-soft-{{ methods[operation.method] }}">{{ operation.method }}</span></td>
+            <td class="text-nowrap"><code>{{ operation.uri }}</code></td>
+            <td>{{ operation.description }}</td>
+            <td class="text-nowrap">{{ operation.codes }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mb-8" aria-labelledby="sandbox-title">
+  <h2 id="sandbox-title">Mode sandbox</h2>
+  <div class="box box-info">
+    <ul class="mb-0">
+      <li><strong>Données initiales</strong> : PUT, PATCH et DELETE répondent normalement, mais la base n'est pas modifiée.</li>
+      <li><strong>Vos données</strong> : ce que vous créez avec POST est réellement enregistré, modifiable et supprimable.</li>
+      <li><strong>Purge</strong> : vos données sont supprimées chaque nuit à 03h00.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="mb-8" aria-labelledby="query-title">
+  <h2 id="query-title">Filtres et pagination</h2>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Paramètre</th>
+          <th scope="col">Rôle</th>
+          <th scope="col">Exemple</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>_start</code></td><td>Offset de départ</td><td class="text-nowrap"><code>/api/posts?_start=10</code></td></tr>
+        <tr><td><code>_limit</code></td><td>Nombre maximal de résultats</td><td class="text-nowrap"><code>/api/photos?_limit=20</code></td></tr>
+        <tr><td>Champ filtrable</td><td>Égalité exacte, listée sur la page de chaque ressource</td><td class="text-nowrap"><code>/api/todos?userId=1&amp;completed=true</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mb-8" aria-labelledby="errors-title">
+  <h2 id="errors-title">Erreurs</h2>
+  <div class="table-responsive mb-4">
+    <table class="table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Signification</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for status in statuses %}
+          <tr>
+            <td><span class="badge badge-soft-{{ status.code < 300 ? 'success' : (status.code < 500 ? 'warning' : 'danger') }}">{{ status.code }}</span></td>
+            <td>{{ status.description }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p>Hors 404, une erreur décrit le problème dans <code>title</code> et <code>detail</code>. Une erreur 422 liste aussi les champs refusés :</p>
+{% set error %}
+{
+  "title": "Validation Failed",
+  "status": 422,
+  "detail": "title: This value should not be blank.",
+  "violations": [
+    {
+      "propertyPath": "title",
+      "title": "This value should not be blank."
+    }
+  ]
+}
+{% endset %}
+  {% include 'fragments/components/_code-block.html.twig' with { code: error, id: 'code-error', language: 'json', title: 'Réponse 422' } only %}
+</section>
+
+<section class="mb-8" aria-labelledby="limits-title">
+  <h2 id="limits-title">Limites</h2>
+  <ul>
+    <li>100 requêtes par minute et par IP sur les six ressources.</li>
+    <li>Body HTTP de 64 Ko au maximum.</li>
+  </ul>
+</section>
+
+<section class="mb-8" aria-labelledby="health-title">
+  <h2 id="health-title">Health check</h2>
+  <p><code>GET {{ path('api_health_check') }}</code> répond 200 si la base de données est disponible, 503 sinon.</p>
+{% set health %}
+{
+  "status": "ok",
+  "timestamp": "2026-11-01T02:00:00+01:00",
+  "checks": {
+    "database": "up"
+  }
+}
+{% endset %}
+  {% include 'fragments/components/_code-block.html.twig' with { code: health, id: 'code-health', language: 'json', title: 'Réponse 200' } only %}
+</section>
+{% endblock %}

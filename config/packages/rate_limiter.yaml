@@ -1,0 +1,18 @@
+framework:
+    rate_limiter:
+        api:
+            policy: sliding_window
+            limit: 100
+            interval: '1 minute'
+
+when@test:
+    framework:
+        cache:
+            pools:
+                cache.rate_limiter_test:
+                    adapter: cache.adapter.filesystem
+                    public: true
+        rate_limiter:
+            api:
+                limit: 20
+                cache_pool: cache.rate_limiter_test

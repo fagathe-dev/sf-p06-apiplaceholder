@@ -1,0 +1,10 @@
+twig:
+    file_name_pattern: '*.twig'
+    globals:
+        design_system_url: '%env(DESIGN_SYSTEM_URL)%'
+        logo_path: '%env(APP_LOGO)%'
+        favicon_path: '%env(APP_FAVICON)%'
+
+when@test:
+    twig:
+        strict_variables: true

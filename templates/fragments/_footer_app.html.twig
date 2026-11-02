@@ -1,0 +1,16 @@
+<footer class="footer app-footer">
+  <div class="container">
+    <div class="footer-content">
+      <a class="navbar-brand" href="{{ path('app_home') }}">
+        <span class="avatar avatar-sm"><img src="{{ asset(logo_path) }}" alt=""></span> JSONPlaceholder
+      </a>
+      <ul class="nav footer-links">
+        <li><a class="nav-link" href="{{ path('app_docs_index') }}">Documentation</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <span>Données sandbox purgées chaque nuit à 03h00</span>
+      <a href="{{ path('api_health_check') }}">Health check</a>
+    </div>
+  </div>
+</footer>

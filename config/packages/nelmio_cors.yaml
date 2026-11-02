@@ -1,0 +1,9 @@
+nelmio_cors:
+    defaults:
+        allow_origin: ['*']
+        # Sans cette option, le bundle renvoie l'origine de la requête au lieu de « * »
+        forced_allow_origin_value: '*'
+        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+        allow_headers: ['Content-Type', 'Accept']
+        expose_headers: ['Retry-After']
+        max_age: 3600
